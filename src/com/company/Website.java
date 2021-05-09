@@ -4,6 +4,7 @@ import java.io.File;
 public class Website {
     private String URL;
     private String compactDescription;
+    private String robotsURL;
     private File robots;
     private float TF;
     private float IDF;
@@ -13,6 +14,7 @@ public class Website {
     public Website(String URL)
     {
         this.URL=URL;
+        robotsURL=URL+"/robots.txt";
         robots=new File("robots.txt");
     }
 
@@ -31,6 +33,14 @@ public class Website {
 
     public String getCompactDescription() {
         return compactDescription;
+    }
+
+    public void setRobotsURL(String robotsURL) {
+        this.robotsURL = robotsURL;
+    }
+
+    public String getRobotsURL() {
+        return robotsURL;
     }
 
     public void setRobots(File robots) {
