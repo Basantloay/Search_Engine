@@ -1,30 +1,33 @@
 package com.company;
 import java.io.File;
-
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.io.FileOutputStream;
+import java.io.IOException;
 public class Website {
-    private String URL;
+    private static Integer ID=0;
+    private URL url;
     private String compactDescription;
-    private String robotsURL;
-    private File robots;
+    private URL robotsURL;
+    private FileOutputStream robots;
     private float TF;
     private float IDF;
     private float TF_IDF;
     private WebsiteType type;
 
-    public Website(String URL)
-    {
-        this.URL=URL;
-        robotsURL=URL+"/robots.txt";
-        robots=new File("robots.txt");
+    public Website(String str) throws MalformedURLException, FileNotFoundException {
+        this.url=new URL(str);
+        robotsURL=new URL(str+"/robots.txt");
+        robots=new FileOutputStream("robots"+ID.toString()+".txt");
     }
 
-    public void setURL(String URL)
-    {
-        this.URL=URL;
+    public void setURL(String str) throws MalformedURLException {
+        this.url=new URL(str);
     }
 
-    public String getURL() {
-        return URL;
+    public URL getURL() {
+        return url;
     }
 
     public void setCompactDescription(String compactDescription) {
@@ -35,19 +38,19 @@ public class Website {
         return compactDescription;
     }
 
-    public void setRobotsURL(String robotsURL) {
-        this.robotsURL = robotsURL;
+    public void setRobotsURL(String str) throws MalformedURLException {
+        robotsURL=new URL(str);
     }
 
-    public String getRobotsURL() {
+    public URL getRobotsURL() {
         return robotsURL;
     }
 
-    public void setRobots(File robots) {
+    public void setRobots(FileOutputStream robots) {
         this.robots = robots;
     }
 
-    public File getRobots() {
+    public FileOutputStream getRobots() {
         return robots;
     }
 
