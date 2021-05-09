@@ -6,7 +6,7 @@ import java.net.URL;
 import java.io.FileOutputStream;
 import java.io.IOException;
 public class Website {
-    private static Integer ID=0;
+    private Integer ID;
     private URL url;
     private String compactDescription;
     private URL robotsURL;
@@ -16,10 +16,19 @@ public class Website {
     private float TF_IDF;
     private WebsiteType type;
 
-    public Website(String str) throws MalformedURLException, FileNotFoundException {
+    public Website(String str,Integer ID) throws MalformedURLException, FileNotFoundException {
         this.url=new URL(str);
+        this.ID = ID;
         robotsURL=new URL(str+"/robots.txt");
-        robots=new FileOutputStream("robots"+ID.toString()+".txt");
+        robots=new FileOutputStream("robots"+this.ID.toString()+".txt");
+    }
+
+    public void setID(Integer ID) {
+        this.ID = ID;
+    }
+
+    public Integer getID() {
+        return ID;
     }
 
     public void setURL(String str) throws MalformedURLException {

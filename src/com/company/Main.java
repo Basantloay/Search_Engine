@@ -14,22 +14,23 @@ public class Main {
 
     public static void main(String[] args) {
         LinkedList<Website> q= new LinkedList<>();
+        Integer j=0;
         try {
             File file = new File("websites.txt");
             Scanner scannedFile = new Scanner(file);
             while (scannedFile.hasNextLine()) {
                 String URL = scannedFile.nextLine();
-                q.add(new Website(URL));
+                q.add(new Website(URL,j));
+
+                j++;
                 //System.out.println(q.getLast().getURL());
             }
             scannedFile.close();
             for(int i=0;i<q.size();i++)
             {
-                Website w=q.get(i);
-                URL website = q.get(i).getRobotsURL();
-                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-                File fos = new FileOutputStream("information.html");
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                URL w = q.get(i).getRobotsURL();
+                ReadableByteChannel rbc = Channels.newChannel(w.openStream());
+                q.get(i).getRobots().getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
             }
 
         } catch (FileNotFoundException | MalformedURLException e) {
