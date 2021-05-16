@@ -5,9 +5,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Vector;
+
 public class Website {
     private Integer ID;
     private URL url;
+    private String urlString;
     private String compactDescription;
     private URL robotsURL;
     private FileOutputStream robots;
@@ -15,8 +19,11 @@ public class Website {
     private float IDF;
     private float TF_IDF;
     private WebsiteType type;
+    Vector<String> disallowed;
+    Vector<String> allowedMap;
 
     public Website(String str,Integer ID) throws MalformedURLException, FileNotFoundException {
+        this.urlString=str;
         this.url=new URL(str);
         this.ID = ID;
         robotsURL=new URL(str+"/robots.txt");
@@ -37,6 +44,14 @@ public class Website {
 
     public URL getURL() {
         return url;
+    }
+
+    public String getUrlString() {
+        return urlString;
+    }
+
+    public void setUrlString(String urlString) {
+        this.urlString = urlString;
     }
 
     public void setCompactDescription(String compactDescription) {
