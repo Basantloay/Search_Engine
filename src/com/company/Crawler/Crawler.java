@@ -1,5 +1,6 @@
 package com.company.Crawler;
 
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -106,10 +107,9 @@ public class Crawler {
                 while (!seedSet.isEmpty() || crawlerCount.intValue()<max) {
                     crawlerCount.incrementAndGet();
                     System.out.println(crawlerCount);
-                    String website=seedSet.get(i);
+                    String website = seedSet.get(i);
                     robots(website, i);
                     Document doc = Jsoup.connect(website).get();
-
                     Elements links = doc.select("a[href]");
 
                     i++;
@@ -137,13 +137,14 @@ public class Crawler {
                     synchronized (seedSet) {
                         seedSet.remove(website);
                     }
-
                 }
-        } catch (FileNotFoundException | MalformedURLException e) {
-            System.out.println("An error occurred.");
+
+    } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
 }
