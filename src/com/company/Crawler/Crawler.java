@@ -5,14 +5,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.io.File;
-import java.io.FileNotFoundException;  // Import this class to handle errors
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -43,40 +40,56 @@ public class Crawler {
     }
 
     public boolean robots(String args, Integer num) throws IOException {
-
+        boolean cont=false;boolean find=false;
         URL w = new URL(args + "/robots.txt");
-        //Document doc;
-        try {
-            ReadableByteChannel rbc = Channels.newChannel(w.openStream());
-            FileOutputStream robots = new FileOutputStream("robots" + num.toString() + ".txt");
-            robots.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-            int j = 0;
-            try {
-                Scanner scannedFile = new Scanner((Readable) robots);
-                while (scannedFile.hasNextLine()) {
-                    String line = scannedFile.nextLine();
-                    System.out.println("\n" + line);
-                    if (line.contains("<!DOCTYPE html>")) {
-                        System.out.println("\nl2naha");
-                        robots.close();
-                        new File("robots" + num.toString() + ".txt").delete();
-                        return false;
-                    }
-
+        try(BufferedReader in = new BufferedReader(new InputStreamReader(w.openStream()))) {
+            String line = null;
+            while((line = in.readLine()) != null) {
+                System.out.println(line);
+                if (line.contains("<!DOCTYPE html>")) {
+                    System.out.println("\nl2naha");
+                    return false;
                 }
-                return true;
-            } catch (ClassCastException a) {
-                return false;
-
+                else
+                {
+                    if(line.contains("User-agent"))
+                    {
+                        if (line.contains("*")) {
+                            cont = true;
+                        }
+                        find=true;
+                    }
+                    else if(find && cont)
+                    {
+                        if(line.contains("Disallow"))
+                        {
+                            if(line.contains("*"))
+                            {
+                                
+                            }
+                                else{
+                            //10 b3d disallow
+                            disallowed.add(args + (line.substring(10)));
+                            System.out.println(args + (line.substring(10)));
+                        }
+                        }
+                        else if(line.contains("Allow"))
+                        {
+                            //7 b3d allow
+                            allowed.add(args+(line.substring(7)));
+                            System.out.println(args+(line.substring(7)));
+                        }
+                    }
+                }
             }
+            return true;
+
+        } catch (FileNotFoundException e ) {
+           return false;
+        }catch( IOException a)
+        {
+            return false;
         }
-        catch (IOException x) {
-                return false;
-            }
-
-
-
-
     }
 
 
