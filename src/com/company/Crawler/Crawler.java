@@ -63,15 +63,9 @@ public class Crawler {
                     {
                         if(line.contains("Disallow"))
                         {
-                            if(line.contains("*"))
-                            {
-                                
-                            }
-                                else{
                             //10 b3d disallow
                             disallowed.add(args + (line.substring(10)));
                             System.out.println(args + (line.substring(10)));
-                        }
                         }
                         else if(line.contains("Allow"))
                         {
@@ -111,6 +105,7 @@ public class Crawler {
             Integer i=0;
                 while (!seedSet.isEmpty() || crawlerCount.intValue()<max) {
                     crawlerCount.incrementAndGet();
+                    System.out.println(crawlerCount);
                     String website=seedSet.get(i);
                     robots(website, i);
                     Document doc = Jsoup.connect(website).get();
@@ -127,7 +122,7 @@ public class Crawler {
                         synchronized (seedSetVisited) {
                             flag2 = seedSet.contains(str);
                         }
-                        if (!flag1 && !flag2) {
+                        if (!flag1 && !flag2 && !disallowed.contains(str)) {
                             synchronized (seedSet) {
                                 seedSet.add(str);
                             }
