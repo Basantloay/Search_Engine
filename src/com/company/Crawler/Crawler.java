@@ -1,5 +1,6 @@
 package com.company.Crawler;
 
+import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,11 +19,12 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 
 public class Crawler {
+    public String name="SENinja" ;
     private static int max = 5000;
     public static int crawlerNumber = 5;
-    private Set<String> seedSetVisited;
+    private Queue<String> seedSetVisited;
     private Vector<Integer> removedItems;
-    private LinkedList<String> seedSet;
+    private Queue<String> seedSet;
     private int ID;
     AtomicInteger crawlerCount = new AtomicInteger();
     private Date recrawlTime;
@@ -32,7 +34,7 @@ public class Crawler {
     Vector<String> disallowed;
     Vector<String> allowed;
 
-    public Crawler(int id, LinkedList<String> seedSet, Set<String> seedSetVisited, Vector<String> disallowed, Vector<String> allowed) {
+    public Crawler(int id, Queue<String> seedSet, LinkedList<String> seedSetVisited, Vector<String> disallowed, Vector<String> allowed) {
         this.ID = id;
         this.seedSet = seedSet;
         this.seedSetVisited = seedSetVisited;
@@ -64,9 +66,12 @@ public class Crawler {
                     {
                         if(line.contains("Disallow"))
                         {
+                            int index=line.length()-1;
+                            if(line.contains("*"))
+                              index=line.indexOf("*");
                             //10 b3d disallow
-                            disallowed.add(args + (line.substring(10)));
-                            System.out.println(args + (line.substring(10)));
+                            disallowed.add(args + (line.substring(10,index)+line.substring(index+1)));
+                            System.out.println(args + (line.substring(10,index)+line.substring(index+1)));
                         }
                         else if(line.contains("Allow"))
                         {
@@ -91,8 +96,8 @@ public class Crawler {
 
 
 
-    public void parse(String args)
-    {
+    public void parse(String args) throws IOException {
+        FileWriter f1=new FileWriter("Test.txt");
         int j=0;
         try {
             File file = new File(args);
@@ -104,12 +109,17 @@ public class Crawler {
             }
             scannedFile.close();
             Integer i=0;
+
+
                 while (!seedSet.isEmpty() || crawlerCount.intValue()<max) {
                     crawlerCount.incrementAndGet();
                     System.out.println(crawlerCount);
-                    String website = seedSet.get(i);
+                    String website = seedSet.remove();
+                    f1.write(website+'\n');
                     robots(website, i);
-                    Document doc = Jsoup.connect(website).get();
+                    int timeout;
+                    Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").method(Connection.Method.POST)
+                            .timeout(0).ignoreHttpErrors(true).get();
                     Elements links = doc.select("a[href]");
 
                     i++;
@@ -137,6 +147,7 @@ public class Crawler {
                     synchronized (seedSet) {
                         seedSet.remove(website);
                     }
+
                 }
 
     } catch (FileNotFoundException e) {
@@ -144,6 +155,7 @@ public class Crawler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        f1.close();
     }
 
 
