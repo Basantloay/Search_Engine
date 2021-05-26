@@ -6,7 +6,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.NoSuchFileException;
@@ -18,7 +17,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 
-public class Crawler {
+public class Crawler implements Runnable{
     public String name="SENinja" ;
     private static int max = 5000;
     public static int crawlerNumber = 5;
@@ -57,6 +56,8 @@ public class Crawler {
                 {
                     if(line.contains("User-agent"))
                     {
+                        if(line.contains(name))
+                            cont=true;
                         if (line.contains("*")) {
                             cont = true;
                         }
@@ -76,8 +77,11 @@ public class Crawler {
                         else if(line.contains("Allow"))
                         {
                             //7 b3d allow
-                            allowed.add(args+(line.substring(7)));
-                            System.out.println(args+(line.substring(7)));
+                            int index=line.length()-1;
+                            if(line.contains("*"))
+                                index=line.indexOf("*");
+                            allowed.add(args+(line.substring(7,index)+line.substring(index+1)));
+                            System.out.println(args+(line.substring(7,index)+line.substring(index+1)));
                         }
                     }
                 }
@@ -99,14 +103,21 @@ public class Crawler {
     public void parse(String args) throws IOException {
         FileWriter f1=new FileWriter("Test.txt");
         int j=0;
+        boolean flag =true;
         try {
             File file = new File(args);
             Scanner scannedFile = new Scanner(file);
-            while (scannedFile.hasNextLine()) {
-                String URL = scannedFile.nextLine();
-                seedSet.add(URL);
-                j++;
+            if((Thread.currentThread().getName())=="1") {
+                while (scannedFile.hasNextLine()) {
+                    String URL = scannedFile.nextLine();
+                    if (!seedSet.contains(URL))
+                        seedSet.add(URL);
+                    j++;
+                }
+                flag=false;
             }
+            else
+                while(flag);
             scannedFile.close();
             Integer i=0;
 
@@ -159,4 +170,12 @@ public class Crawler {
     }
 
 
+    @Override
+    public void run()  {
+        try {
+            parse("websites.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -13,6 +13,22 @@ public class Main {
         Vector<String>allowed=new  Vector<String>();
         Queue<String> seedSetVisited=new LinkedList<>();
         Crawler c=new Crawler(0,l, (LinkedList<String>) seedSetVisited,disallowed,allowed);
-        c.parse("websites.txt");
+        Thread t1 = new Thread (c);
+        Thread t2 = new Thread (c);
+        t1.setName("1");
+        t2.setName("2");
+        Thread t3 = new Thread (c);
+        Thread t4 = new Thread (c);
+        t1.setName("3");
+        t2.setName("4");
+        Thread t5 = new Thread (c);
+        t1.setName("5");
+        try {
+            t1.start(); t2.start();t3.start(); t4.start();t5.start();
+        }
+        catch(Exception ex)
+        {
+
+        }
     }
 }
