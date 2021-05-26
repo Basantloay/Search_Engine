@@ -1,5 +1,6 @@
 package com.company.Crawler;
 
+import com.company.Website;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -71,8 +72,12 @@ public class Crawler implements Runnable{
                             if(line.contains("*"))
                               index=line.indexOf("*");
                             //10 b3d disallow
-                            disallowed.add(args + (line.substring(10,index)+line.substring(index+1)));
-                            System.out.println(args + (line.substring(10,index)+line.substring(index+1)));
+                            if(line.length()>11)
+                            {
+                            synchronized (disallowed){
+
+                            disallowed.add(args + (line.substring(10,index)+line.substring(index+1)));}
+                            System.out.println(args + (line.substring(10,index)+line.substring(index+1)));}
                         }
                         else if(line.contains("Allow"))
                         {
@@ -80,9 +85,14 @@ public class Crawler implements Runnable{
                             int index=line.length()-1;
                             if(line.contains("*"))
                                 index=line.indexOf("*");
-                            allowed.add(args+(line.substring(7,index)+line.substring(index+1)));
-                            System.out.println(args+(line.substring(7,index)+line.substring(index+1)));
+                            if(line.length()>8)
+                            {
+                                synchronized (allowed){
+
+                                    allowed.add(args + (line.substring(7,index)+line.substring(index+1)));}
+                                System.out.println(args + (line.substring(7,index)+line.substring(index+1)));}
                         }
+                        
                     }
                 }
             }
@@ -99,33 +109,48 @@ public class Crawler implements Runnable{
 
 
 
-
+    Boolean flag =true;
     public void parse(String args) throws IOException {
         FileWriter f1=new FileWriter("Test.txt");
         int j=0;
-        boolean flag =true;
+
         try {
+            //System.out.println("Hello");
             File file = new File(args);
             Scanner scannedFile = new Scanner(file);
             if((Thread.currentThread().getName())=="1") {
                 while (scannedFile.hasNextLine()) {
                     String URL = scannedFile.nextLine();
-                    if (!seedSet.contains(URL))
-                        seedSet.add(URL);
-                    j++;
+                    synchronized (seedSet) {
+                        if (!seedSet.contains(URL))
+                            seedSet.add(URL);
+                        j++;
+                    }
                 }
-                flag=false;
+                synchronized (flag) {
+                    flag = false;
+                }
             }
             else
-                while(flag);
+                while(flag){System.out.println(Thread.currentThread().getName());}
             scannedFile.close();
             Integer i=0;
 
 
                 while (!seedSet.isEmpty() || crawlerCount.intValue()<max) {
                     crawlerCount.incrementAndGet();
+                    System.out.println(Thread.currentThread().getName());
                     System.out.println(crawlerCount);
-                    String website = seedSet.remove();
+                    String website="";
+                    synchronized (seedSet){
+                        if(!seedSet.isEmpty()) {
+                            website = seedSet.remove();
+                        }
+                        else
+                            return;
+
+                    }
+
                     f1.write(website+'\n');
                     robots(website, i);
                     int timeout;
@@ -137,16 +162,19 @@ public class Crawler implements Runnable{
                     boolean flag1, flag2;
                     for (Element link : links) {
                         String str = link.attr("abs:href");
-                        synchronized (seedSet) {
+                        synchronized (seedSetVisited ) {
                             flag1 = seedSetVisited.contains(str);
                         }
-                        synchronized (seedSetVisited) {
+                        synchronized (seedSet) {
                             flag2 = seedSet.contains(str);
                         }
+                        synchronized (disallowed)
+                        {
                         if (!flag1 && !flag2 && !disallowed.contains(str)) {
                             synchronized (seedSet) {
                                 seedSet.add(str);
                             }
+                        }
                         }
                         //System.out.println("\nlink:" + str);
 

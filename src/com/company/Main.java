@@ -19,10 +19,10 @@ public class Main {
         t2.setName("2");
         Thread t3 = new Thread (c);
         Thread t4 = new Thread (c);
-        t1.setName("3");
-        t2.setName("4");
+        t3.setName("3");
+        t4.setName("4");
         Thread t5 = new Thread (c);
-        t1.setName("5");
+        t5.setName("5");
         try {
             t1.start(); t2.start();t3.start(); t4.start();t5.start();
         }
