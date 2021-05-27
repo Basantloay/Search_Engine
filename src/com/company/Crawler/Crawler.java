@@ -8,6 +8,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.*;
+import java.net.UnknownHostException;
 import java.nio.file.FileSystems;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -18,6 +19,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 
+@SuppressWarnings("ALL")
 public class Crawler implements Runnable{
     public String name="SENinja" ;
     private static int max = 5000;
@@ -44,13 +46,16 @@ public class Crawler implements Runnable{
 
     public boolean robots(String args, Integer num) throws IOException {
         boolean cont=false;boolean find=false;
+        if (args=="")
+            return false;
+
         URL w = new URL(args + "/robots.txt");
         try(BufferedReader in = new BufferedReader(new InputStreamReader(w.openStream()))) {
             String line = null;
             while((line = in.readLine()) != null) {
-                System.out.println(line);
+                //System.out.println(line);
                 if (line.contains("<!DOCTYPE html>")) {
-                    System.out.println("\nl2naha");
+                   // System.out.println("\nl2naha");
                     return false;
                 }
                 else
@@ -77,7 +82,8 @@ public class Crawler implements Runnable{
                             synchronized (disallowed){
 
                             disallowed.add(args + (line.substring(10,index)+line.substring(index+1)));}
-                            System.out.println(args + (line.substring(10,index)+line.substring(index+1)));}
+                            //System.out.println(args + (line.substring(10,index)+line.substring(index+1)));
+                            }
                         }
                         else if(line.contains("Allow"))
                         {
@@ -90,9 +96,10 @@ public class Crawler implements Runnable{
                                 synchronized (allowed){
 
                                     allowed.add(args + (line.substring(7,index)+line.substring(index+1)));}
-                                System.out.println(args + (line.substring(7,index)+line.substring(index+1)));}
+                                //System.out.println(args + (line.substring(7,index)+line.substring(index+1)));
+                                }
                         }
-                        
+
                     }
                 }
             }
@@ -104,6 +111,7 @@ public class Crawler implements Runnable{
         {
             return false;
         }
+
     }
 
 
@@ -118,7 +126,7 @@ public class Crawler implements Runnable{
             //System.out.println("Hello");
             File file = new File(args);
             Scanner scannedFile = new Scanner(file);
-            if((Thread.currentThread().getName())=="1") {
+            if ((Thread.currentThread().getName()) == "1") {
                 while (scannedFile.hasNextLine()) {
                     String URL = scannedFile.nextLine();
                     synchronized (seedSet) {
@@ -130,72 +138,96 @@ public class Crawler implements Runnable{
                 synchronized (flag) {
                     flag = false;
                 }
-            }
-            else
-                while(flag){System.out.println(Thread.currentThread().getName());}
-            scannedFile.close();
-            Integer i=0;
-
-
-                while (!seedSet.isEmpty() || crawlerCount.intValue()<max) {
-                    crawlerCount.incrementAndGet();
+            } else
+                while (flag) {
                     System.out.println(Thread.currentThread().getName());
-                    System.out.println(crawlerCount);
-                    String website="";
-                    synchronized (seedSet){
-                        if(!seedSet.isEmpty()) {
-                            website = seedSet.remove();
-                        }
-                        else
-                            return;
+                }
+            scannedFile.close();
 
-                    }
+        }catch(FileNotFoundException e){
+            System.out.println("Error in file");
+        }
+        Integer i = 0;
+        while (!seedSet.isEmpty() || crawlerCount.intValue() < max) {
+            try{
+                crawlerCount.incrementAndGet();
+                System.out.println(Thread.currentThread().getName());
+                //System.out.println(crawlerCount);
+                String website = "";
+                synchronized (seedSet) {
+                    if (!seedSet.isEmpty()) {
+                        website = seedSet.remove();
+                    } else
+                        return;
 
-                    f1.write(website+'\n');
+                }
+
+                f1.write(website + '\n');
+                if (website != null || website.length() != 0)
                     robots(website, i);
-                    int timeout;
-                    Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").method(Connection.Method.POST)
-                            .timeout(0).ignoreHttpErrors(true).get();
+                int timeout;
+                //final Connection.Response postResponse = Jsoup.connect(website).execute();
+                //if (Jsoup.connect(website).execute()!=null) {
+                //System.out.println("a");
+                if (website != null || website.length() != 0)
+                {
+                    Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.POST).timeout(200000).ignoreHttpErrors(true).get();
+                //Document doc = Jsoup.parseBodyFragment(website);
+
+                //System.out.println(doc);
                     Elements links = doc.select("a[href]");
 
-                    i++;
-                    boolean flag1, flag2;
-                    for (Element link : links) {
-                        String str = link.attr("abs:href");
-                        synchronized (seedSetVisited ) {
-                            flag1 = seedSetVisited.contains(str);
-                        }
-                        synchronized (seedSet) {
-                            flag2 = seedSet.contains(str);
-                        }
-                        synchronized (disallowed)
-                        {
+                i++;
+                boolean flag1, flag2;
+                for (Element link : links) {
+                    String str = link.attr("abs:href");
+                    synchronized (seedSetVisited) {
+                        flag1 = seedSetVisited.contains(str);
+                    }
+                    synchronized (seedSet) {
+                        flag2 = seedSet.contains(str);
+                    }
+                    synchronized (disallowed) {
                         if (!flag1 && !flag2 && !disallowed.contains(str)) {
                             synchronized (seedSet) {
                                 seedSet.add(str);
                             }
                         }
-                        }
-                        //System.out.println("\nlink:" + str);
+                    }
+                    //System.out.println("\nlink:" + str);
 
-
-                    }
-                    synchronized (seedSetVisited) {
-                        seedSetVisited.add(website);
-                    }
-                    synchronized (seedSet) {
-                        seedSet.remove(website);
-                    }
 
                 }
+                synchronized (seedSetVisited) {
+                    seedSetVisited.add(website);
+                }
+                synchronized (seedSet) {
+                    seedSet.remove(website);
+                }
+                }
+                //}
+            } catch(FileNotFoundException e){
+                e.printStackTrace();
+                System.out.println("Error in file");
+                System.out.println(crawlerCount);
+            } catch(IOException e){
+                e.printStackTrace();
+                System.out.println("Error");
+                System.out.println(crawlerCount);
+            }
+        catch(IllegalArgumentException x)
+            {
+                x.printStackTrace();
+                System.out.println("error");
+                System.out.println(crawlerCount);
+            }
 
-    } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+
         }
         f1.close();
     }
+
+
 
 
     @Override
