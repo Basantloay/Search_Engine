@@ -1,12 +1,15 @@
-package com.company;
+package com.company.Indexer;
+import javax.swing.text.Document;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 import java.util.Vector;
+
 
 public class Website {
     private Integer ID;
@@ -19,8 +22,12 @@ public class Website {
     private float IDF;
     private float TF_IDF;
     private WebsiteType type;
-    Vector<String> disallowed;
-    Vector<String> allowedMap;
+    private Document html;
+    private String header;
+    private double rank;
+    private String area;
+    private Date date;
+
 
     public Website(String str,Integer ID) throws MalformedURLException, FileNotFoundException {
         this.urlString=str;
@@ -28,6 +35,58 @@ public class Website {
         this.ID = ID;
         robotsURL=new URL(str+"/robots.txt");
         robots=new FileOutputStream("robots"+this.ID.toString()+".txt");
+    }
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public void setRobotsURL(URL robotsURL) {
+        this.robotsURL = robotsURL;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public Document getHtml() {
+        return html;
+    }
+
+    public double getRank() {
+        return rank;
+    }
+
+    public String getHeader() {
+        return header;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
+    }
+
+    public void setHtml(Document html) {
+        this.html = html;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    public void setHeader(String header) {
+        this.header = header;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void setRank(double rank) {
+        this.rank = rank;
     }
 
     public void setID(Integer ID) {

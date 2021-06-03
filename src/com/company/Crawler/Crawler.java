@@ -1,6 +1,6 @@
 package com.company.Crawler;
 
-import com.company.Website;
+import com.company.Indexer.Website;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
