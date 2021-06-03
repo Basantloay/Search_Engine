@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.apache.lucene.analysis:source:2.9.1-v201101211721">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/analysis/source/2.9.1-v201101211721/source-2.9.1-v201101211721.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/analysis/source/2.9.1-v201101211721/source-2.9.1-v201101211721-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/lucene/analysis/source/2.9.1-v201101211721/source-2.9.1-v201101211721-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
