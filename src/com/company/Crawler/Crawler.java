@@ -12,6 +12,8 @@ import java.net.*;
 import java.nio.file.FileSystems;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -28,19 +30,20 @@ public class Crawler implements Runnable{
     private Queue<String> seedSet;
     private int ID;
     AtomicInteger crawlerCount = new AtomicInteger();
-    private Date recrawlTime;
-    int turn;
-    boolean recrawl;
+    private Date time;
     //Map<String, Vector<String>>
     Vector<String> disallowed;
-    Vector<String> allowed;
 
-    public Crawler(int id, Queue<String> seedSet, LinkedList<String> seedSetVisited, Vector<String> disallowed, Vector<String> allowed) {
+    Database database;
+
+    public Crawler(int id, Queue<String> seedSet, LinkedList<String> seedSetVisited, Vector<String> disallowed, Database database) {
         this.ID = id;
         this.seedSet = seedSet;
         this.seedSetVisited = seedSetVisited;
         this.disallowed = disallowed;
-        this.allowed = allowed;
+        this.database=database;
+        this.time=new Date();
+
     }
 
     public boolean robots(String args, Integer num) throws IOException, URISyntaxException {
@@ -141,7 +144,7 @@ public class Crawler implements Runnable{
         HttpURLConnection con;
         while (!seedSet.isEmpty() && crawlerCount.intValue() <= max) {
             try {
-                crawlerCount.incrementAndGet();
+
                 System.out.println(Thread.currentThread().getName());
                 //System.out.println(crawlerCount);
                 String website = "";
@@ -171,10 +174,13 @@ public class Crawler implements Runnable{
 
                             Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
                             //Document doc = Jsoup.parseBodyFragment(website);
+                            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                            LocalDateTime time = LocalDateTime.now();
+                            database.AddVisited(website,doc,dtf.format(time));
                             f1.write(website + '\n');
                             //System.out.println(doc);
                             Elements links = doc.select("a[href]");
-
+                            crawlerCount.incrementAndGet();
                             i++;
                             boolean flag1, flag2;
                             for (Element link : links) {
@@ -199,6 +205,9 @@ public class Crawler implements Runnable{
                                 if (!flag1 && !flag2 && !flag3) {
                                     synchronized (seedSet) {
                                         seedSet.add(str);
+                                        DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                                        LocalDateTime time2 = LocalDateTime.now();
+                                        database.AddHyberlinks(str,dtf2.format(time2));
                                     }
                                 }
 

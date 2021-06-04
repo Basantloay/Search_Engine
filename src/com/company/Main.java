@@ -1,5 +1,6 @@
 package com.company;
 import com.company.Crawler.Crawler;
+import com.company.Crawler.Database;
 
 import java.io.IOException;
 import java.util.*;
@@ -12,7 +13,8 @@ public class Main {
         //Map<String, Vector<String>> allowed=new HashMap<String, Vector<String>>();
         Vector<String>allowed=new  Vector<String>();
         Queue<String> seedSetVisited=new LinkedList<>();
-        Crawler c=new Crawler(0,l, (LinkedList<String>) seedSetVisited,disallowed,allowed);
+        Database database=new Database();
+        Crawler c=new Crawler(0,l, (LinkedList<String>) seedSetVisited,disallowed,database);
         Thread t1 = new Thread (c);
         Thread t2 = new Thread (c);
         t1.setName("1");
