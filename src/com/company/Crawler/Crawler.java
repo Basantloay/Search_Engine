@@ -58,7 +58,7 @@ public class Crawler implements Runnable{
         try(BufferedReader in = new BufferedReader(new InputStreamReader(w.openStream()))) {
             String line = null;
             int index;
-            String website=args;
+            String website="";
             while((line = in.readLine()) != null) {
                 //System.out.println(line);
                 if (line.contains("<!DOCTYPE html>")) {
@@ -77,15 +77,18 @@ public class Crawler implements Runnable{
                         if (line.contains("Disallow")) {
                             if(line.length()<10)
                                 return false;
-                            website += (line.substring(10) );
+                            website = args + (line.substring(10) );
                             website=website.replace("*",".*");
                             website=website.replace("?","\\?");
                             website=website.replace("+","\\+");
-                            website=website.replaceAll(".","\\.");
+                            website=website.replace(".","\\.");
                                     //System.out.println(args + (line.substring(10,index)+line.substring(index+1)));
                                     synchronized (disallowed) {
-
-                                        disallowed.add(website );
+                                        DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                                        LocalDateTime time2 = LocalDateTime.now();
+                                        //System.out.println(website);
+                                        database.AddDisallowed(website,dtf2.format(time2));
+                                        disallowed.add(website);
                                     }
                                 }
 
@@ -124,7 +127,12 @@ public class Crawler implements Runnable{
                     String URL = scannedFile.nextLine();
                     synchronized (seedSet) {
                         if (!seedSet.contains(URL))
+                        {
+                            DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                            LocalDateTime time2 = LocalDateTime.now();
+                            database.AddVisited(URL,dtf2.format(time2));
                             seedSet.add(URL);
+                        }
                         j++;
                     }
                 }
@@ -176,7 +184,7 @@ public class Crawler implements Runnable{
                             //Document doc = Jsoup.parseBodyFragment(website);
                             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                             LocalDateTime time = LocalDateTime.now();
-                            database.AddVisited(website,dtf.format(time));
+                            database.Update(website,dtf.format(time));
                             f1.write(website + '\n');
                             //System.out.println(doc);
                             Elements links = doc.select("a[href]");

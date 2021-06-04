@@ -1,7 +1,11 @@
 package com.company.Indexer;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+
 import javax.swing.text.Document;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.io.FileOutputStream;
@@ -22,7 +26,7 @@ public class Website {
     private float IDF;
     private float TF_IDF;
     private WebsiteType type;
-    private Document html;
+    private org.jsoup.nodes.Document html;
     private String header;
     private double rank;
     private String area;
@@ -30,11 +34,28 @@ public class Website {
 
 
     public Website(String str,Integer ID) throws MalformedURLException, FileNotFoundException {
-        this.urlString=str;
-        this.url=new URL(str);
+        this.urlString = str;
+        this.url = new URL(str);
         this.ID = ID;
-        robotsURL=new URL(str+"/robots.txt");
-        robots=new FileOutputStream("robots"+this.ID.toString()+".txt");
+        robotsURL = new URL(str + "/robots.txt");
+        robots = new FileOutputStream("robots" + this.ID.toString() + ".txt");
+        if (str != null && str.length() != 0) {
+            URL w = new URL(str);
+            HttpURLConnection con;
+            try {
+                con = (HttpURLConnection) w.openConnection();
+                if (w.getHost() != null) {
+                    con.getResponseCode();
+
+                    org.jsoup.nodes.Document doc = Jsoup.connect(str).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
+                    this.html = doc;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+        }
     }
 
     public URL getUrl() {
@@ -49,7 +70,7 @@ public class Website {
         return date;
     }
 
-    public Document getHtml() {
+    public org.jsoup.nodes.Document getHtml() {
         return html;
     }
 
@@ -69,7 +90,7 @@ public class Website {
         this.url = url;
     }
 
-    public void setHtml(Document html) {
+    public void setHtml(org.jsoup.nodes.Document html) {
         this.html = html;
     }
 

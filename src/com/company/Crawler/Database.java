@@ -51,7 +51,23 @@ public class Database {
         //websites.createIndex("hyberlinks");
         //websites.createIndex("HTMLDocuments");
         websites.createIndex("Time");
+        websites.createIndex("Title");
+        websites.createIndex("Headers");
+        websites.createIndex("paragraph");
+        websites.createIndex("bold");
+        websites.createIndex("italic");
+        websites.createIndex("small");
+        websites.createIndex("ordered_list");
+        websites.createIndex("unordered_list");
+
         disallowedWebsite=crawlerDatabase.getCollection("DisallowedWebsites");
+        disallowedWebsite.createIndex("URL");
+        disallowedWebsite.createIndex("crawled");
+        disallowedWebsite.createIndex("indexed");
+        disallowedWebsite.createIndex("rank");
+        //disallowedWebsite.createIndex("hyberlinks");
+        //disallowedWebsite.createIndex("HTMLDocuments");
+        disallowedWebsite.createIndex("Time");
         //hyberlinks = crawlerDatabase.getCollection("hyberlinks");
         //hyberlinks.createIndex("URL");
         //hyberlinks.createIndex("refTo");
@@ -62,18 +78,24 @@ public class Database {
     }
 
     public void AddVisited(String website, String time){
+        DBObject SearchQ = new BasicDBObject("URL", website);
 
+        if(websites.find(SearchQ).count() == 0)
+        {
         BasicDBObject row = new BasicDBObject("URL", website)
-                    .append("crawled", 1)
+                    .append("crawled", 0)
                     .append("indexed", 0)
                     .append("rank",(double) 0.0)
                     .append("Time",time);
 
             websites.insert(row);
+        }
 
     }
     public void AddHyberlinks(String website, String time){
+        DBObject SearchQ = new BasicDBObject("URL", website);
 
+        if(websites.find(SearchQ).count() == 0){
         BasicDBObject row = new BasicDBObject("URL", website)
                 .append("crawled", 0)
                 .append("indexed", 0)
@@ -81,6 +103,34 @@ public class Database {
                 .append("Time",time);
 
         websites.insert(row);
+        }
 
     }
+
+    public void AddDisallowed(String website1, String time){
+        DBObject SearchQ = new BasicDBObject("URL", website1);
+
+        if(websites.find(SearchQ).count() == 0)
+        {
+            BasicDBObject row = new BasicDBObject("URL", website1)
+                .append("crawled", 0)
+                .append("indexed", 0)
+                .append("rank",(double) 0.0)
+                .append("Time",time);
+
+        disallowedWebsite.insert(row);}
+
+    }
+
+    public void Update(String str, String time)
+    {
+        DBObject SearchQ = new BasicDBObject("URL", str);
+        DBObject ObjectQ = new BasicDBObject("crawled", 1)
+                .append("Time",time);
+        DBObject UpdateQ = new BasicDBObject("$set",ObjectQ);
+        if(websites.find(SearchQ).count() != 0)
+            websites.update(SearchQ, UpdateQ);
+
+    }
+
 }
