@@ -176,7 +176,7 @@ public class Crawler implements Runnable{
                             //Document doc = Jsoup.parseBodyFragment(website);
                             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                             LocalDateTime time = LocalDateTime.now();
-                            database.AddVisited(website,doc,dtf.format(time));
+                            database.AddVisited(website,dtf.format(time));
                             f1.write(website + '\n');
                             //System.out.println(doc);
                             Elements links = doc.select("a[href]");

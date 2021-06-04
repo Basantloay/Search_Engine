@@ -49,7 +49,7 @@ public class Database {
         websites.createIndex("indexed");
         websites.createIndex("rank");
         //websites.createIndex("hyberlinks");
-        websites.createIndex("HTMLDocuments");
+        //websites.createIndex("HTMLDocuments");
         websites.createIndex("Time");
         disallowedWebsite=crawlerDatabase.getCollection("DisallowedWebsites");
         //hyberlinks = crawlerDatabase.getCollection("hyberlinks");
@@ -61,13 +61,12 @@ public class Database {
 
     }
 
-    public void AddVisited(String website, org.jsoup.nodes.Document doc, String time){
+    public void AddVisited(String website, String time){
 
         BasicDBObject row = new BasicDBObject("URL", website)
                     .append("crawled", 1)
                     .append("indexed", 0)
                     .append("rank",(double) 0.0)
-                    .append("HTMLDocuments",doc)
                     .append("Time",time);
 
             websites.insert(row);
@@ -79,7 +78,6 @@ public class Database {
                 .append("crawled", 0)
                 .append("indexed", 0)
                 .append("rank",(double) 0.0)
-                .append("HTMLDocuments",(Document)null)
                 .append("Time",time);
 
         websites.insert(row);
