@@ -13,6 +13,12 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.ParallelScanOptions;
 import com.mongodb.ServerAddress;
+import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 
 import javax.swing.*;
 import java.net.UnknownHostException;
@@ -33,30 +39,24 @@ public class Database {
     //DBCollection htmlDocuments;
     //DBCollection time;
     public Database() {
-        try {
-            this.mongoClient = new MongoClient("localhost", 27017);
-            //create database
-            this.crawlerDatabase = mongoClient.getDB("CrawlerDatabase");
-            //create collections and fields
-            websites = crawlerDatabase.getCollection("websites");
-            websites.createIndex("URL");
-            websites.createIndex("crawled");
-            websites.createIndex("indexed");
-            websites.createIndex("rank");
-            //websites.createIndex("hyberlinks");
-            websites.createIndex("HTMLDocuments");
-            websites.createIndex("Time");
-            disallowedWebsite=crawlerDatabase.getCollection("DisallowedWebsites");
-            //hyberlinks = crawlerDatabase.getCollection("hyberlinks");
-            //hyberlinks.createIndex("URL");
-            //hyberlinks.createIndex("refTo");
-            //htmlDocuments = crawlerDatabase.getCollection("HTMLDocuments");
-            //time = crawlerDatabase.getCollection("time");
-
-
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        this.mongoClient = new MongoClient("localhost", 27017);
+        //create database
+        this.crawlerDatabase = mongoClient.getDB("CrawlerDatabase");
+        //create collections and fields
+        websites = crawlerDatabase.getCollection("websites");
+        websites.createIndex("URL");
+        websites.createIndex("crawled");
+        websites.createIndex("indexed");
+        websites.createIndex("rank");
+        //websites.createIndex("hyberlinks");
+        websites.createIndex("HTMLDocuments");
+        websites.createIndex("Time");
+        disallowedWebsite=crawlerDatabase.getCollection("DisallowedWebsites");
+        //hyberlinks = crawlerDatabase.getCollection("hyberlinks");
+        //hyberlinks.createIndex("URL");
+        //hyberlinks.createIndex("refTo");
+        //htmlDocuments = crawlerDatabase.getCollection("HTMLDocuments");
+        //time = crawlerDatabase.getCollection("time");
 
 
     }
