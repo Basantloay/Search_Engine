@@ -47,8 +47,8 @@ public class Website {
                 if (w.getHost() != null) {
                     con.getResponseCode();
 
-                    org.jsoup.nodes.Document doc = Jsoup.connect(str).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
-                    this.html = doc;
+                    //org.jsoup.nodes.Document doc = Jsoup.connect(str).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
+                    //this.html = doc;
                 }
             } catch (IOException e) {
                 e.printStackTrace();

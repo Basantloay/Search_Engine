@@ -1,4 +1,6 @@
 package com.company.Crawler;
+import com.company.Indexer.Website;
+import com.company.Indexer.Word;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import com.mongodb.*;
@@ -21,6 +23,8 @@ import org.jsoup.select.Elements;
 
 
 import javax.swing.*;
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.LinkedList;
@@ -33,8 +37,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class Database {
     DB crawlerDatabase;
     MongoClient mongoClient;
-    DBCollection websites ;
+    DBCollection websites;
     DBCollection disallowedWebsite;
+    DBCollection IndexerCollection;
     //DBCollection hyberlinks;
     //DBCollection htmlDocuments;
     //DBCollection time;
@@ -74,7 +79,11 @@ public class Database {
         //htmlDocuments = crawlerDatabase.getCollection("HTMLDocuments");
         //time = crawlerDatabase.getCollection("time");
 
-
+        IndexerCollection = crawlerDatabase.getCollection("IndexerCollection");
+        IndexerCollection.createIndex("Value");
+        IndexerCollection.createIndex("DF");
+        IndexerCollection.createIndex("ListOfDocuments");
+        IndexerCollection.createIndex("Time");
     }
 
     public void AddVisited(String website, String time){
@@ -118,8 +127,24 @@ public class Database {
                 .append("rank",(double) 0.0)
                 .append("Time",time);
 
-        disallowedWebsite.insert(row);}
+            disallowedWebsite.insert(row);
+        }
 
+    }
+
+    public void AddIndexed(Word word, String time)
+    {
+        DBObject SearchQ = new BasicDBObject("Value", word.getValue());
+
+        if(IndexerCollection.find(SearchQ).count() == 0)
+        {
+            BasicDBObject row = new BasicDBObject("Value", word.getValue())
+                    .append("DF", word.getDF())
+                    .append("ListOfDocuments",word.getListOfDocuments())
+                    .append("Time",time);
+
+            IndexerCollection.insert(row);
+        }
     }
 
     public void Update(String str, String time)
@@ -131,6 +156,28 @@ public class Database {
         if(websites.find(SearchQ).count() != 0)
             websites.update(SearchQ, UpdateQ);
 
+    }
+
+    public void UpdateIndex(String str, String time)
+    {
+        DBObject SearchQ = new BasicDBObject("URL", str);
+        DBObject ObjectQ = new BasicDBObject("indexed", 1)
+                .append("Time",time);
+        DBObject UpdateQ = new BasicDBObject("$set",ObjectQ);
+        if(websites.find(SearchQ).count() != 0)
+            websites.update(SearchQ, UpdateQ);
+
+    }
+
+    public void getCrawled(LinkedList<Website> Visited) throws MalformedURLException, FileNotFoundException {
+        DBCursor cur =  websites.find(new BasicDBObject("crawled", 1).append("indexed",0));
+        int size = cur.size();
+        for(int i = 0 ;i< size;i++) {
+            DBObject doc = cur.next();
+            String URL = (String) doc.get("URL");
+            Website w = new Website(URL, i);
+            Visited.add(w);
+        }
     }
 
 }

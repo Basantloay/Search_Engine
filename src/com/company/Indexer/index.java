@@ -1,13 +1,18 @@
 package com.company.Indexer;
 import com.company.Crawler.Database;
+import com.mongodb.DB;
+import com.mongodb.MongoClient;
 import javafx.util.Pair;
 import org.jsoup.Jsoup;
 
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.xml.crypto.Data;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -27,19 +32,23 @@ import java.io.StringReader;
 import opennlp.tools.stemmer.*;
 
 public class index implements Runnable {
-    LinkedList <Website> websiteList;
     Database db;
+    LinkedList <Website> websiteList;
     List<String> HTML_Parts;
     Map<String,Word> KeyWords = new HashMap<String, Word>();
-    index(LinkedList<Website> websiteList,Database datab){
-        this.websiteList = websiteList;
+    index(Database datab){
+        websiteList = new LinkedList<Website>();
         this.db = datab;
         this.HTML_Parts = new LinkedList<String>();
     }
 
-
     public void indexing(Website web){
-        org.jsoup.nodes.Document htmldoc = web.getHtml();
+        org.jsoup.nodes.Document htmldoc = null;
+        try {
+            htmldoc = Jsoup.connect(String.valueOf(web.getUrl())).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         if(htmldoc==null) {
             return;
         }
@@ -91,14 +100,13 @@ public class index implements Runnable {
 
                     //System.out.println(stemmed);
                     Word keyword;
-                    if(KeyWords.containsKey(stemmed))
-                    {
-                        keyword = KeyWords.get(stemmed);
-                    }
-                    else
-                    {
-                        keyword = new Word(stemmed);
-                        KeyWords.put(stemmed, keyword);
+                    synchronized (KeyWords) {
+                        if (KeyWords.containsKey(stemmed)) {
+                            keyword = KeyWords.get(stemmed);
+                        } else {
+                            keyword = new Word(stemmed);
+                            KeyWords.put(stemmed, keyword);
+                        }
                     }
                     if(keyword.getListOfDocuments().isEmpty())
                     {
@@ -164,20 +172,13 @@ public class index implements Runnable {
                             keyword.insertList(newList);
                         }
                     }
-
-
-
-
                 }
-
-
             }
+            DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            LocalDateTime time2 = LocalDateTime.now();
+            this.db.UpdateIndex(web.getUrlString(), dtf2.format(time2));
 
-        for(Map.Entry<String,Word> entry : KeyWords.entrySet())
-        {
-            entry.getValue().UpdateDF();
-            entry.getValue().Print();
-        }
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -186,6 +187,17 @@ public class index implements Runnable {
         }
     }
 
+    public void UpdateDatabase()
+    {
+        for(Map.Entry<String,Word> entry : KeyWords.entrySet())
+        {
+            System.out.println("dbdb");
+            DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+            LocalDateTime time2 = LocalDateTime.now();
+            entry.getValue().UpdateDF();
+            this.db.AddIndexed(entry.getValue(), dtf2.format(time2));
+        }
+    }
     void HTML_Parts_Init(List<String> HTML , Website web) throws IOException
     {
         org.jsoup.nodes.Document ParsedHTML = null;
@@ -247,18 +259,93 @@ public class index implements Runnable {
             HTML.add(new String(header.text()));     //Add table_row
         }
     }
+    public void StartIndexing(LinkedList <Website> websiteList)
+    {
+        for(int i = 0; i < websiteList.size(); i++)
+        {
+            this.indexing(websiteList.get(i));
+        }
+    }
+
+    Boolean flag = true;
+    @Override
+    public void run() {
+        try {
+            if ((Thread.currentThread().getName()) == "1") {
+
+
+                this.db.getCrawled(this.websiteList);
+                //System.out.println(Thread.currentThread().getName() + "eee");
+                synchronized (flag) {
+                    flag = false;
+                }
+            }
+            else
+                while (flag) {
+                    System.out.println(Thread.currentThread().getName() + "eee");
+                }
+            }
+            catch(MalformedURLException e){
+                e.printStackTrace();
+            } catch(FileNotFoundException e){
+                e.printStackTrace();
+            }
+
+
+
+        Integer i = 0;
+        Website web;
+        synchronized (this.websiteList) {
+            while (!(this.websiteList.isEmpty())) {
+                System.out.println("aaaaa");
+                if (!(this.websiteList.isEmpty())) {
+                    web = websiteList.remove();
+
+                    indexing(web);
+                }
+
+
+            }
+        }
+
+
+
+
+    }
     //For Testing
     public static void main(String[] args) throws MalformedURLException, FileNotFoundException {
-        Website web = new Website("https://www.linkedin.com",1);
-        LinkedList <Website> websiteList = null;
         Database db = new Database();
-        index indx = new index(websiteList,db);
-        indx.indexing(web);
+
+        index indx = new index(db);
+        Thread t1 = new Thread (indx);
+        Thread t2 = new Thread (indx);
+        t1.setName("1");
+        t2.setName("2");
+        Thread t3 = new Thread (indx);
+        Thread t4 = new Thread (indx);
+        t3.setName("3");
+        t4.setName("4");
+        Thread t5 = new Thread (indx);
+        t5.setName("5");
+        try {
+            t1.start(); t2.start();t3.start(); t4.start();t5.start();
+        }
+        catch(Exception ex)
+        {
+
+        }
+        try {
+            t1.join();
+            t2.join();
+            t3.join();
+            t4.join();
+            t5.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        indx.UpdateDatabase();
     }
 
-    @Override
-    public void run(){
 
-    }
 }
 
