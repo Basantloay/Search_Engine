@@ -26,10 +26,7 @@ import javax.swing.*;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -179,5 +176,18 @@ public class Database {
             Visited.add(w);
         }
     }
+    public boolean SearchQuery(String str,Vector<List<String>> TotResults) {
+        DBCursor cur = websites.find(new BasicDBObject("Value", str));
+        int size = cur.size();
+        if (size == 0) {
+            return false;
+        }
+        else{
+            DBObject doc = cur.next();
+            TotResults = (Vector<List<String>>) doc.get("ListOfDocuments");
+        }
+        return true;
 
+    }
 }
+
