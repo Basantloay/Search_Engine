@@ -176,15 +176,23 @@ public class Database {
             Visited.add(w);
         }
     }
-    public boolean SearchQuery(String str,Vector<List<String>> TotResults) {
-        DBCursor cur = websites.find(new BasicDBObject("Value", str));
+    public boolean SearchQuery(String str,List<String> URLList) {
+        DBCursor cur = IndexerCollection.find(new BasicDBObject("Value", str));
         int size = cur.size();
         if (size == 0) {
             return false;
         }
         else{
             DBObject doc = cur.next();
-            TotResults = (Vector<List<String>>) doc.get("ListOfDocuments");
+            String[] TotResults =  doc.get("ListOfDocuments").toString().split(",");
+            //System.out.println(TotResults);
+
+            for(int i=0;i<TotResults.length;i++)
+            {
+                if(TotResults[i].contains("["))
+                    URLList.add(TotResults[i]);
+            }
+
         }
         return true;
 
