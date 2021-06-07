@@ -17,9 +17,9 @@ import org.jsoup.select.Elements;
 
 public class Query {
 
-    public void proccessorQuery() throws IOException {
+    public void proccessorQuery(String Entered) throws IOException {
         Database data=new Database();
-        String Entered="circular";
+        //String Entered="circular";
         PorterStemmer s = new PorterStemmer();
         String temp=s.stem(Entered);
         System.out.println(temp);
@@ -47,7 +47,7 @@ public class Query {
 
     public static void main(String[] args) throws IOException {
         Query q=new Query();
-        q.proccessorQuery();
+        q.proccessorQuery("circular");
     }
 
 }
