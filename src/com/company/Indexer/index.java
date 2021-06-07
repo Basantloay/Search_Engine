@@ -43,12 +43,14 @@ public class index implements Runnable {
     }
 
     public void indexing(Website web){
-        org.jsoup.nodes.Document htmldoc = null;
-        try {
-            htmldoc = Jsoup.connect(String.valueOf(web.getUrl())).get();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //org.jsoup.nodes.Document htmldoc = null;
+        //try {
+        //    htmldoc = Jsoup.connect(String.valueOf(web.getUrl())).get();
+        //} catch (IOException e) {
+        //    e.printStackTrace();
+
+        //}
+        org.jsoup.nodes.Document htmldoc =Jsoup.parse(web.getHtml());
         if(htmldoc==null) {
             return;
         }

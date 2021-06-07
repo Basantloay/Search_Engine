@@ -1,6 +1,7 @@
 package com.company;
 import com.company.Crawler.Crawler;
 import com.company.Crawler.Database;
+import com.company.Indexer.Website;
 
 import java.io.IOException;
 import java.util.*;
@@ -25,6 +26,9 @@ public class Main {
         t4.setName("4");
         Thread t5 = new Thread (c);
         t5.setName("5");
+        LinkedList<Website>list=new LinkedList<>();
+
+
         try {
             t1.start(); t2.start();t3.start(); t4.start();t5.start();
         }
@@ -32,6 +36,7 @@ public class Main {
         {
 
         }
-
+        //database.getCrawled(list);
+        //System.out.println(list.size());
     }
 }

@@ -51,7 +51,7 @@ public class Database {
         websites.createIndex("indexed");
         websites.createIndex("rank");
         //websites.createIndex("hyberlinks");
-        //websites.createIndex("HTMLDocuments");
+        websites.createIndex("HTMLDocuments");
         websites.createIndex("Time");
         websites.createIndex("Title");
         websites.createIndex("Headers");
@@ -83,7 +83,7 @@ public class Database {
         IndexerCollection.createIndex("Time");
     }
 
-    public void AddVisited(String website, String time){
+    public void AddWebsite(String website, String time){
         DBObject SearchQ = new BasicDBObject("URL", website);
 
         if(websites.find(SearchQ).count() == 0)
@@ -144,11 +144,11 @@ public class Database {
         }
     }
 
-    public void Update(String str, String time)
+    public void Update(String str,String document, String time)
     {
         DBObject SearchQ = new BasicDBObject("URL", str);
         DBObject ObjectQ = new BasicDBObject("crawled", 1)
-                .append("Time",time);
+                .append("Time",time).append("HTMLDocuments",document);
         DBObject UpdateQ = new BasicDBObject("$set",ObjectQ);
         if(websites.find(SearchQ).count() != 0)
             websites.update(SearchQ, UpdateQ);
@@ -173,6 +173,7 @@ public class Database {
             DBObject doc = cur.next();
             String URL = (String) doc.get("URL");
             Website w = new Website(URL, i);
+            w.setHtml((String)doc.get("HTMLDocuments"));
             Visited.add(w);
         }
     }

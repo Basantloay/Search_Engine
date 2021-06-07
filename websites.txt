@@ -1,7 +1,10 @@
 https://www.linkedin.com
 https://www.linkedin.com
 https://www.javapoint.com
-https://www.javatpoint.com/java-regex
-https://www.g9g.com
 https://www.github.com
 https://www.youtube.com
+https://www.investopedia.com/terms/e/ecommerce.asp
+https://www.ncbi.nlm.nih.gov/books/NBK293948/
+https://docs.mongodb.com/manual/core/databases-and-collections/
+https://www.geeksforgeeks.org/program-to-convert-array-to-list-in-java/
+https://time.com/5166659/how-to-travel-the-world/

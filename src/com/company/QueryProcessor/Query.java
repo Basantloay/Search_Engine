@@ -47,7 +47,7 @@ public class Query {
 
     public static void main(String[] args) throws IOException {
         Query q=new Query();
-        q.proccessorQuery("circular");
+        q.proccessorQuery("travel");
     }
 
 }

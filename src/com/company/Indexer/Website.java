@@ -26,7 +26,7 @@ public class Website {
     private float IDF;
     private float TF_IDF;
     private WebsiteType type;
-    private org.jsoup.nodes.Document html;
+    private String html;
     private String header;
     private double rank;
     private String area;
@@ -37,22 +37,20 @@ public class Website {
         this.urlString = str;
         this.url = new URL(str);
         this.ID = ID;
-        robotsURL = new URL(str + "/robots.txt");
-        robots = new FileOutputStream("robots" + this.ID.toString() + ".txt");
         if (str != null && str.length() != 0) {
             URL w = new URL(str);
-            HttpURLConnection con;
-            try {
-                con = (HttpURLConnection) w.openConnection();
-                if (w.getHost() != null) {
-                    con.getResponseCode();
+            //HttpURLConnection con;
+           /* try {
+                //con = (HttpURLConnection) w.openConnection();
+                //if (w.getHost() != null) {
+                 //   con.getResponseCode();
 
                     //org.jsoup.nodes.Document doc = Jsoup.connect(str).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
                     //this.html = doc;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
 
 
         }
@@ -70,7 +68,7 @@ public class Website {
         return date;
     }
 
-    public org.jsoup.nodes.Document getHtml() {
+    public String getHtml() {
         return html;
     }
 
@@ -90,7 +88,7 @@ public class Website {
         this.url = url;
     }
 
-    public void setHtml(org.jsoup.nodes.Document html) {
+    public void setHtml(String html) {
         this.html = html;
     }
 

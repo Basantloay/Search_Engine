@@ -115,11 +115,9 @@ public class Crawler implements Runnable{
     Boolean flag =true;
     public void parse(String args) throws IOException {
 
-        FileWriter f1=new FileWriter("Test.txt");
         int j=0;
-
         try {
-            //System.out.println("Hello");
+
             File file = new File(args);
             Scanner scannedFile = new Scanner(file);
             if ((Thread.currentThread().getName()) == "1") {
@@ -130,7 +128,7 @@ public class Crawler implements Runnable{
                         {
                             DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                             LocalDateTime time2 = LocalDateTime.now();
-                            database.AddVisited(URL,dtf2.format(time2));
+                            database.AddWebsite(URL,dtf2.format(time2));
                             seedSet.add(URL);
                         }
                         j++;
@@ -141,8 +139,8 @@ public class Crawler implements Runnable{
                 }
             } else
                 while (flag) {
-                    System.out.println(Thread.currentThread().getName());
-                }
+                    //System.out.println(Thread.currentThread().getName());
+                    }
             scannedFile.close();
 
         }catch(FileNotFoundException e){
@@ -154,41 +152,31 @@ public class Crawler implements Runnable{
             try {
 
                 System.out.println(Thread.currentThread().getName());
-                //System.out.println(crawlerCount);
                 String website = "";
                 synchronized (seedSet) {
                     if (!seedSet.isEmpty()) {
                         website = seedSet.remove();
-                    } else
+                    } else {
+                        System.out.println("Empty");
                         return;
+                    }
 
                 }
 
-
-                if (website != null || website.length() != 0)
-                    robots(website, i);
                 int timeout;
-                //final Connection.Response postResponse = Jsoup.connect(website).execute();
-                //if (Jsoup.connect(website).execute()!=null) {
-                //System.out.println("a");
+
 
                 if (website != null && website.length() != 0) {
-                    URL w = new URL(website);
-                     con = (HttpURLConnection) w.openConnection();
 
-                    try {
-                        if (w.getHost() != null) {
-                        con.getResponseCode();
-
+                            robots(website, i);
                             Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
-                            //Document doc = Jsoup.parseBodyFragment(website);
+                            String str2=doc.toString();
                             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                             LocalDateTime time = LocalDateTime.now();
-                            database.Update(website,dtf.format(time));
-                            f1.write(website + '\n');
-                            //System.out.println(doc);
-                            Elements links = doc.select("a[href]");
+                            database.Update(website,str2,dtf.format(time));
                             crawlerCount.incrementAndGet();
+                            Elements links = doc.select("a[href]");
+
                             i++;
                             boolean flag1, flag2;
                             for (Element link : links) {
@@ -218,10 +206,6 @@ public class Crawler implements Runnable{
                                         database.AddHyberlinks(str,dtf2.format(time2));
                                     }
                                 }
-
-                                //System.out.println("\nlink:" + str);
-
-
                             }
                             synchronized (seedSetVisited) {
                                 seedSetVisited.add(website);
@@ -229,13 +213,8 @@ public class Crawler implements Runnable{
                             synchronized (seedSet) {
                                 seedSet.remove(website);
                             }
-                        }
 
-                    }catch (UnknownHostException e) {
-                        System.out.println("Unknown Host ");
-                        con.disconnect();
-                }
-            }
+                        }
             }
                 catch(FileNotFoundException e){
                 //e.printStackTrace();
@@ -252,10 +231,7 @@ public class Crawler implements Runnable{
                 System.out.println("Inavalid URL syntax");
                 System.out.println(crawlerCount);
             }
-
-
         }
-        f1.close();
     }
 
 
