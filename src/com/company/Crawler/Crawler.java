@@ -159,8 +159,8 @@ public class Crawler implements Runnable{
         while (!seedSet.isEmpty() && crawlerCount.intValue() <= max && seedSetVisited.size()<=max) {
             try {
                 //System.out.println(seedSet.size());
-               //System.out.println(seedSetVisited.size());
-                System.out.println(Thread.currentThread().getName());
+                System.out.println(seedSetVisited.size());
+                //System.out.println(Thread.currentThread().getName());
                 String website = "";
                 synchronized (seedSet) {
                     if (!seedSet.isEmpty()) {
@@ -182,8 +182,7 @@ public class Crawler implements Runnable{
 
                     if (!compactDescription.contains(website)) {
                         String str2 = doc.toString();
-                        String s=str2.substring(0,str2.length()%100);
-
+                        String s=str2.substring(0,str2.length()%250);
                         compactDescription.add(s);
                         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                         LocalDateTime time = LocalDateTime.now();
@@ -239,17 +238,17 @@ public class Crawler implements Runnable{
                 catch(FileNotFoundException e){
                 //e.printStackTrace();
                 System.out.println("File is not found");
-                System.out.println(seedSetVisited.size());
+                    System.out.println(Thread.currentThread().getName());
             } catch(IOException e){
                 //e.printStackTrace();
                 System.out.println("Invalid");
-                System.out.println(seedSetVisited.size());
+                System.out.println(Thread.currentThread().getName());
             }
         catch(IllegalArgumentException | URISyntaxException x)
             {
                 //x.printStackTrace();
                 System.out.println("Inavalid URL syntax");
-                System.out.println(seedSetVisited.size());
+                System.out.println(Thread.currentThread().getName());
             }
         }
     }
