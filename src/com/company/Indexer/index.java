@@ -6,7 +6,6 @@ import javafx.util.Pair;
 import org.jsoup.Jsoup;
 
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.xml.crypto.Data;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -30,6 +29,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import java.io.StringReader;
 
 import opennlp.tools.stemmer.*;
+import org.jsoup.nodes.Element;
 
 public class index implements Runnable {
     Database db;
@@ -205,11 +205,12 @@ public class index implements Runnable {
         org.jsoup.nodes.Document ParsedHTML = null;
 
             ParsedHTML = Jsoup.parse(web.getHtml());//Jsoup.connect(String.valueOf(web.getUrl())).get();
-
+        //URL
         HTML.add(new String(String.valueOf(web.getUrl())));
+        //Title
         HTML.add(new String(ParsedHTML.title()));
 
-
+        //Headers
         String Headers = "";
         for (org.jsoup.nodes.Element header : ParsedHTML.getElementsByTag("h1")) {
             Headers += header.text();
@@ -232,7 +233,15 @@ public class index implements Runnable {
         for (org.jsoup.nodes.Element header : ParsedHTML.getElementsByTag("th")) {
             Headers += header.text();
         }
-        HTML.add(new String(Headers));       //Add Headers
+        HTML.add(new String(Headers));
+
+        //Images
+        String Images = "";
+        // Extracting Images
+        for (Element image : ParsedHTML.getElementsByTag("img")) {
+            Images += image.attr("alt");;
+        }
+        HTML.add(new String(Images));
 
         for (org.jsoup.nodes.Element header : ParsedHTML.getElementsByTag("p")) {
             HTML.add(new String(header.text()));     //Add Paragraph
