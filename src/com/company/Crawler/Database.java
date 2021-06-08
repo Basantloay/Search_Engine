@@ -1,6 +1,7 @@
 package com.company.Crawler;
 import com.company.Indexer.Website;
 import com.company.Indexer.Word;
+import opennlp.tools.stemmer.PorterStemmer;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import com.mongodb.*;
@@ -37,6 +38,7 @@ public class Database {
     DBCollection websites;
     DBCollection disallowedWebsite;
     DBCollection IndexerCollection;
+
     //DBCollection hyberlinks;
     //DBCollection htmlDocuments;
     //DBCollection time;
@@ -63,7 +65,7 @@ public class Database {
         websites.createIndex("ordered_list");
         websites.createIndex("unordered_list");
 
-        disallowedWebsite=crawlerDatabase.getCollection("DisallowedWebsites");
+        disallowedWebsite = crawlerDatabase.getCollection("DisallowedWebsites");
         disallowedWebsite.createIndex("URL");
         disallowedWebsite.createIndex("crawled");
         disallowedWebsite.createIndex("indexed");
@@ -84,104 +86,100 @@ public class Database {
         IndexerCollection.createIndex("Time");
     }
 
-    public void AddWebsite(String website, String time){
+    public void AddWebsite(String website, String time) {
         DBObject SearchQ = new BasicDBObject("URL", website);
 
-        if(websites.find(SearchQ).count() == 0)
-        {
-        BasicDBObject row = new BasicDBObject("URL", website)
+        if (websites.find(SearchQ).count() == 0) {
+            BasicDBObject row = new BasicDBObject("URL", website)
                     .append("crawled", 0)
                     .append("indexed", 0)
-                    .append("rank",(double) 0.0)
-                    .append("Time",time);
+                    .append("rank", (double) 0.0)
+                    .append("Time", time);
 
             websites.insert(row);
         }
 
     }
-    public void AddHyberlinks(String website, String time){
+
+    public void AddHyberlinks(String website, String time) {
         DBObject SearchQ = new BasicDBObject("URL", website);
 
-        if(websites.find(SearchQ).count() == 0){
-        BasicDBObject row = new BasicDBObject("URL", website)
-                .append("crawled", 0)
-                .append("indexed", 0)
-                .append("rank",(double) 0.0)
-                .append("Time",time);
+        if (websites.find(SearchQ).count() == 0) {
+            BasicDBObject row = new BasicDBObject("URL", website)
+                    .append("crawled", 0)
+                    .append("indexed", 0)
+                    .append("rank", (double) 0.0)
+                    .append("Time", time);
 
-        websites.insert(row);
+            websites.insert(row);
         }
 
     }
 
-    public void AddDisallowed(String website1, String time){
+    public void AddDisallowed(String website1, String time) {
         DBObject SearchQ = new BasicDBObject("URL", website1);
 
-        if(websites.find(SearchQ).count() == 0)
-        {
+        if (websites.find(SearchQ).count() == 0) {
             BasicDBObject row = new BasicDBObject("URL", website1)
-                .append("crawled", 0)
-                .append("indexed", 0)
-                .append("rank",(double) 0.0)
-                .append("Time",time);
+                    .append("crawled", 0)
+                    .append("indexed", 0)
+                    .append("rank", (double) 0.0)
+                    .append("Time", time);
 
             disallowedWebsite.insert(row);
         }
 
     }
 
-    public void AddIndexed(Word word, String time)
-    {
+    public void AddIndexed(Word word, String time) {
         DBObject SearchQ = new BasicDBObject("Value", word.getValue());
 
-        if(IndexerCollection.find(SearchQ).count() == 0)
-        {
+        if (IndexerCollection.find(SearchQ).count() == 0) {
             BasicDBObject row = new BasicDBObject("Value", word.getValue())
                     .append("DF", word.getDF())
-                    .append("ListOfDocuments",word.getListOfDocuments())
-                    .append("Time",time);
+                    .append("ListOfDocuments", word.getListOfDocuments())
+                    .append("Time", time);
 
             IndexerCollection.insert(row);
         }
     }
 
-    public void Update(String str,String document, String time,String str2)
-    {
+    public void Update(String str, String document, String time, String str2) {
         DBObject SearchQ = new BasicDBObject("URL", str);
         DBObject ObjectQ = new BasicDBObject("crawled", 1)
-                .append("Time",time).append("HTMLDocuments",document).append("Description",str2);
-        DBObject UpdateQ = new BasicDBObject("$set",ObjectQ);
-        if(websites.find(SearchQ).count() != 0)
+                .append("Time", time).append("HTMLDocuments", document).append("Description", str2);
+        DBObject UpdateQ = new BasicDBObject("$set", ObjectQ);
+        if (websites.find(SearchQ).count() != 0)
             websites.update(SearchQ, UpdateQ);
 
     }
 
-    public void UpdateIndex(String str, String time)
-    {
+    public void UpdateIndex(String str, String time) {
         DBObject SearchQ = new BasicDBObject("URL", str);
         DBObject ObjectQ = new BasicDBObject("indexed", 1)
-                .append("Time",time);
-        DBObject UpdateQ = new BasicDBObject("$set",ObjectQ);
-        if(websites.find(SearchQ).count() != 0)
+                .append("Time", time);
+        DBObject UpdateQ = new BasicDBObject("$set", ObjectQ);
+        if (websites.find(SearchQ).count() != 0)
             websites.update(SearchQ, UpdateQ);
 
     }
 
     public void getCrawled(LinkedList<Website> Visited) throws MalformedURLException, FileNotFoundException {
-        DBCursor cur =  websites.find(new BasicDBObject("crawled", 1).append("indexed",0));
+        DBCursor cur = websites.find(new BasicDBObject("crawled", 1).append("indexed", 0));
         int size = cur.size();
-        for(int i = 0 ;i< size;i++) {
+        for (int i = 0; i < size; i++) {
             DBObject doc = cur.next();
             String URL = (String) doc.get("URL");
             Website w = new Website(URL, i);
-            w.setHtml((String)doc.get("HTMLDocuments"));
+            w.setHtml((String) doc.get("HTMLDocuments"));
             Visited.add(w);
         }
     }
+
     public void getSeedSet(Queue<String> seed) throws MalformedURLException, FileNotFoundException {
-        DBCursor cur =  websites.find(new BasicDBObject("crawled", 0).append("indexed",0));
+        DBCursor cur = websites.find(new BasicDBObject("crawled", 0).append("indexed", 0));
         int size = cur.size();
-        for(int i = 0 ;i< size;i++) {
+        for (int i = 0; i < size; i++) {
             DBObject doc = cur.next();
             String URL = (String) doc.get("URL");
             seed.add(URL);
@@ -189,18 +187,19 @@ public class Database {
     }
 
     public void getVisitedSeedSet(Queue<String> seed) throws MalformedURLException, FileNotFoundException {
-        DBCursor cur =  websites.find(new BasicDBObject("crawled", 1).append("indexed",0));
+        DBCursor cur = websites.find(new BasicDBObject("crawled", 1).append("indexed", 0));
         int size = cur.size();
-        for(int i = 0 ;i< size;i++) {
+        for (int i = 0; i < size; i++) {
             DBObject doc = cur.next();
             String URL = (String) doc.get("URL");
             seed.add(URL);
         }
     }
+
     public void getDisallowed(Vector<String> seed) throws MalformedURLException, FileNotFoundException {
-        DBCursor cur =  disallowedWebsite.find(new BasicDBObject("crawled", 1).append("indexed",0));
+        DBCursor cur = disallowedWebsite.find(new BasicDBObject("crawled", 1).append("indexed", 0));
         int size = cur.size();
-        for(int i = 0 ;i< size;i++) {
+        for (int i = 0; i < size; i++) {
             DBObject doc = cur.next();
             String URL = (String) doc.get("URL");
             seed.add(URL);
@@ -208,29 +207,56 @@ public class Database {
     }
 
     public void getDescription(Vector<String> seed) throws MalformedURLException, FileNotFoundException {
-        DBCursor cur =  websites.find(new BasicDBObject("crawled", 1).append("indexed",0));
+        DBCursor cur = websites.find(new BasicDBObject("crawled", 1).append("indexed", 0));
         int size = cur.size();
-        for(int i = 0 ;i< size;i++) {
+        for (int i = 0; i < size; i++) {
             DBObject doc = cur.next();
             String URL = (String) doc.get("Description");
             seed.add(URL);
         }
     }
-    public boolean SearchQuery(String str,List<String> URLList) {
-        DBCursor cur = IndexerCollection.find(new BasicDBObject("Value", str));
-        int size = cur.size();
-        if (size == 0) {
-            return false;
-        }
-        else{
-            DBObject doc = cur.next();
-            String[] TotResults =  doc.get("ListOfDocuments").toString().split(",");
-            //System.out.println(TotResults);
 
-            for(int i=0;i<TotResults.length;i++)
-            {
-                if(TotResults[i].contains("["))
-                    URLList.add(TotResults[i]);
+    public boolean SearchQuery(String str,List<String> URLList) {
+        //System.out.println(str);
+        PorterStemmer s = new PorterStemmer();
+
+        String  newtrial= str.replace("+","");
+        newtrial  = newtrial.replace("and"," ");
+        newtrial  = newtrial.replace(" or"," ");
+        newtrial  = newtrial.replace(" the"," ");
+        newtrial  = newtrial.replace(" is"," ");
+        newtrial  = newtrial.replace(" in"," ");
+        newtrial  = newtrial.replace(" on"," ");
+        newtrial  = newtrial.replace(" by"," ");
+        newtrial  = newtrial.replace(" at"," ");
+        newtrial  = newtrial.replace(" am"," ");
+        newtrial  = newtrial.replace(" are"," ");
+        System.out.println("TRIALLL");
+        System.out.println(newtrial);
+        //Vector <String > newquery =new Vector<String>();
+        String [] newquery = newtrial.split(" ");
+
+        //Vector<String> query = new Vector<String>();
+
+        for(int j = 0 ; j < newquery.length; j++ )
+        {
+            System.out.println(newquery[j]);
+
+            DBCursor cur = IndexerCollection.find(new BasicDBObject("Value", s.stem(newquery[j])));
+            int size = cur.size();
+            if (size == 0) {
+                return false;
+            }
+            else{
+                DBObject doc = cur.next();
+                String[] TotResults =  doc.get("ListOfDocuments").toString().split(",");
+                //System.out.println(TotResults);
+
+                for(int i=0;i<TotResults.length;i++)
+                {
+                    if(TotResults[i].contains("["))
+                        URLList.add(TotResults[i]);
+                }
             }
 
         }
@@ -238,4 +264,3 @@ public class Database {
 
     }
 }
-
