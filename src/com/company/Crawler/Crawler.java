@@ -159,7 +159,7 @@ public class Crawler implements Runnable{
         while (!seedSet.isEmpty() && crawlerCount.intValue() <= max && seedSetVisited.size()<=max) {
             try {
                 //System.out.println(seedSet.size());
-               System.out.println(seedSetVisited.size());
+               //System.out.println(seedSetVisited.size());
                 System.out.println(Thread.currentThread().getName());
                 String website = "";
                 synchronized (seedSet) {
@@ -239,17 +239,17 @@ public class Crawler implements Runnable{
                 catch(FileNotFoundException e){
                 //e.printStackTrace();
                 System.out.println("File is not found");
-                System.out.println(crawlerCount);
+                System.out.println(seedSetVisited.size());
             } catch(IOException e){
                 //e.printStackTrace();
                 System.out.println("Invalid");
-                System.out.println(crawlerCount);
+                System.out.println(seedSetVisited.size());
             }
         catch(IllegalArgumentException | URISyntaxException x)
             {
                 //x.printStackTrace();
                 System.out.println("Inavalid URL syntax");
-                System.out.println(crawlerCount);
+                System.out.println(seedSetVisited.size());
             }
         }
     }
