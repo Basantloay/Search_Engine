@@ -1,29 +1,29 @@
 # SENinja Search_Engine
 
-## Crawler
+1) Crawler
 
-### prerequisites:
+a- prerequisites:
 
 1- MongoDB local host on port number 27017
 
 2- Maven project 
 
-### to run crawler: 
+b- to run crawler: 
 
 run Main file in src.com.company
 
 
-## Indexer
+2) Indexer
 
-### prerequisites:
+####prerequisites:
 
 1- MongoDB local host on port number 27017
 
 2- Maven project 
 
-### to run crawler: 
+#####to run crawler: 
 
 run Index file in src.com.company.Indexer
 
 
-## Process query and GUI
+3) Process query and GUI
