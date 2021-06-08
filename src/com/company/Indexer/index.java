@@ -36,7 +36,7 @@ public class index implements Runnable {
     LinkedList <Website> websiteList;
     List<String> HTML_Parts;
     Map<String,Word> KeyWords = new HashMap<String, Word>();
-    index(Database datab){
+    public index(Database datab){
         websiteList = new LinkedList<Website>();
         this.db = datab;
         this.HTML_Parts = new LinkedList<String>();

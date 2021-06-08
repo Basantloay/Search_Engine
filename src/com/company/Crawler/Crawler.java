@@ -61,9 +61,7 @@ public class Crawler implements Runnable{
             int index;
             String website="";
             while((line = in.readLine()) != null) {
-                //System.out.println(line);
                 if (line.contains("<!DOCTYPE html>")) {
-                   // System.out.println("\nl2naha");
                     return false;
                 }
                 else {
@@ -83,22 +81,17 @@ public class Crawler implements Runnable{
                             website=website.replace("?","\\?");
                             website=website.replace("+","\\+");
                             website=website.replace(".","\\.");
-                                    //System.out.println(args + (line.substring(10,index)+line.substring(index+1)));
-                                    synchronized (disallowed) {
+
+                            synchronized (disallowed) {
                                         DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                                         LocalDateTime time2 = LocalDateTime.now();
-                                        //System.out.println(website);
                                         database.AddDisallowed(website,dtf2.format(time2));
                                         disallowed.add(website);
                                     }
                                 }
-
-
                             }
-
                         }
                     }
-
             return true;
 
         } catch (FileNotFoundException e ) {
@@ -111,18 +104,13 @@ public class Crawler implements Runnable{
     }
 
 
-
-
     Boolean flag =true;
     public void parse(String args) throws IOException {
-
         int j=0;
         try {
-
             File file = new File(args);
             Scanner scannedFile = new Scanner(file);
             if ((Thread.currentThread().getName()) == "1") {
-
                     database.getSeedSet(seedSet);
                     database.getDisallowed(disallowed);
                     database.getVisitedSeedSet(seedSetVisited);
@@ -149,18 +137,17 @@ public class Crawler implements Runnable{
                 while (flag) {
                     System.out.println(Thread.currentThread().getName());
                     }
-
-
         }catch(FileNotFoundException e){
             System.out.println("Error in file");
         }
+
         Integer i = 0;
-        HttpURLConnection con;
-        while (!seedSet.isEmpty() && crawlerCount.intValue() <= max && seedSetVisited.size()<=max) {
+        boolean f;
+        synchronized(seedSetVisited){
+            f=seedSetVisited.size()<=max;}
+        while (!seedSet.isEmpty() && f) {
             try {
-                //System.out.println(seedSet.size());
-                System.out.println(seedSetVisited.size());
-                //System.out.println(Thread.currentThread().getName());
+
                 String website = "";
                 synchronized (seedSet) {
                     if (!seedSet.isEmpty()) {
@@ -171,18 +158,13 @@ public class Crawler implements Runnable{
                     }
 
                 }
-
-                int timeout;
-
-
-                if (website != null && website.length() != 0) {
-
-                    robots(website, i);
-                    Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
+                 if (website != null && website.length() != 0) {
 
                     if (!compactDescription.contains(website)) {
+                        robots(website, i);
+                        Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
                         String str2 = doc.toString();
-                        String s=str2.substring(0,str2.length()%250);
+                        String s=str2.substring(0,str2.length()%100);
                         compactDescription.add(s);
                         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                         LocalDateTime time = LocalDateTime.now();
@@ -211,11 +193,6 @@ public class Crawler implements Runnable{
                                 }
                             }
                             boolean flag4;
-                                /*synchronized(compactDescription)
-                                {
-                                    Document doc1 = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
-                                    flag4=compactDescription.contains(doc.title()+doc.head().toString()+doc.body().toString());
-                                }*/
                             if (!flag1 && !flag2 && !flag3) {
                                 synchronized (seedSet) {
                                     seedSet.add(str);
@@ -227,6 +204,7 @@ public class Crawler implements Runnable{
                         }
                         synchronized (seedSetVisited) {
                             seedSetVisited.add(website);
+                            System.out.println(seedSetVisited.size());
                         }
                         synchronized (seedSet) {
                             seedSet.remove(website);
@@ -252,8 +230,6 @@ public class Crawler implements Runnable{
             }
         }
     }
-
-
 
 
     @Override

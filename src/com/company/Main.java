@@ -2,17 +2,19 @@ package com.company;
 import com.company.Crawler.Crawler;
 import com.company.Crawler.Database;
 import com.company.Indexer.Website;
+import com.company.Indexer.index;
 
 import java.io.IOException;
 import java.util.*;
 
+import static java.lang.Thread.sleep;
+
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         LinkedList<String>l=new LinkedList<>() ;
          Vector<String>disallowed=new  Vector<String>();
         Vector<String>combactDescription=new  Vector<String>();
-        //Map<String, Vector<String>> allowed=new HashMap<String, Vector<String>>();
         Vector<String>allowed=new  Vector<String>();
         Queue<String> seedSetVisited=new LinkedList<>();
         Database database=new Database();
@@ -43,5 +45,25 @@ public class Main {
         }
         //database.getCrawled(list);
         //System.out.println(list.size());
+        t1.join();t2.join();t3.join();t4.join();t5.join();
+        sleep(1000);
+        //Indexer
+        index indx = new index(database);
+        Thread i1 = new Thread (indx);
+        Thread i2 = new Thread (indx);
+        i1.setName("1");
+        i2.setName("2");
+        Thread i3 = new Thread (indx);
+        Thread i4 = new Thread (indx);
+        i3.setName("3");
+        i4.setName("4");
+        Thread i5 = new Thread (indx);
+        i5.setName("5");
+        try {
+            i1.start(); i2.start();i3.start(); i4.start();i5.start();
+        }
+        catch(Exception ex)
+        {}
+
     }
 }
