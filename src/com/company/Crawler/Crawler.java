@@ -143,90 +143,88 @@ public class Crawler implements Runnable{
 
         Integer i = 0;
         boolean f;
-        synchronized(seedSetVisited){
-            f=seedSetVisited.size()<=max;}
-        while (!seedSet.isEmpty() && f) {
-            try {
+        synchronized(seedSetVisited) {
 
-                String website = "";
-                synchronized (seedSet) {
-                    if (!seedSet.isEmpty()) {
-                        website = seedSet.remove();
-                    } else {
-                        System.out.println("Empty");
-                        return;
+            while (!seedSet.isEmpty() && seedSetVisited.size() <= max) {
+                try {
+
+                    String website = "";
+                    synchronized (seedSet) {
+                        if (!seedSet.isEmpty()) {
+                            website = seedSet.remove();
+                        } else {
+                            System.out.println("Empty");
+                            return;
+                        }
+
                     }
+                    if (website != null && website.length() != 0) {
 
-                }
-                 if (website != null && website.length() != 0) {
-
-                    if (!compactDescription.contains(website)) {
-                        robots(website, i);
-                        Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
-                        String str2 = doc.toString();
-                        String s=str2.substring(0,str2.length()%100);
-                        compactDescription.add(s);
-                        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-                        LocalDateTime time = LocalDateTime.now();
-                        database.Update(website, str2, dtf.format(time), s);
-                        crawlerCount.incrementAndGet();
-                        Elements links = doc.select("a[href]");
-                        i++;
-                        boolean flag1, flag2;
-                        for (Element link : links) {
-                            String str = link.attr("abs:href");
+                        if (!compactDescription.contains(website)) {
+                            robots(website, i);
+                            Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
+                            String str2 = doc.toString();
+                            String s = str2.substring(0, str2.length() % 100);
+                            compactDescription.add(s);
+                            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                            LocalDateTime time = LocalDateTime.now();
+                            database.Update(website, str2, dtf.format(time), s);
+                            crawlerCount.incrementAndGet();
+                            Elements links = doc.select("a[href]");
+                            i++;
+                            boolean flag1, flag2;
+                            for (Element link : links) {
+                                String str = link.attr("abs:href");
+                                synchronized (seedSetVisited) {
+                                    flag1 = seedSetVisited.contains(str);
+                                }
+                                synchronized (seedSet) {
+                                    flag2 = seedSet.contains(str);
+                                }
+                                int iter = 0;
+                                boolean flag3 = false;
+                                synchronized (disallowed) {
+                                    while (iter < disallowed.size()) {
+                                        if (Pattern.matches(disallowed.get(iter), str)) {
+                                            flag3 = true;
+                                            break;
+                                        }
+                                        iter++;
+                                    }
+                                }
+                                boolean flag4;
+                                if (!flag1 && !flag2 && !flag3) {
+                                    synchronized (seedSet) {
+                                        seedSet.add(str);
+                                        DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                                        LocalDateTime time2 = LocalDateTime.now();
+                                        database.AddHyberlinks(str, dtf2.format(time2));
+                                    }
+                                }
+                            }
                             synchronized (seedSetVisited) {
-                                flag1 = seedSetVisited.contains(str);
+                                seedSetVisited.add(website);
+                                System.out.println(seedSetVisited.size());
                             }
                             synchronized (seedSet) {
-                                flag2 = seedSet.contains(str);
+                                seedSet.remove(website);
                             }
-                            int iter = 0;
-                            boolean flag3 = false;
-                            synchronized (disallowed) {
-                                while (iter < disallowed.size()) {
-                                    if (Pattern.matches(disallowed.get(iter), str)) {
-                                        flag3 = true;
-                                        break;
-                                    }
-                                    iter++;
-                                }
-                            }
-                            boolean flag4;
-                            if (!flag1 && !flag2 && !flag3) {
-                                synchronized (seedSet) {
-                                    seedSet.add(str);
-                                    DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-                                    LocalDateTime time2 = LocalDateTime.now();
-                                    database.AddHyberlinks(str, dtf2.format(time2));
-                                }
-                            }
-                        }
-                        synchronized (seedSetVisited) {
-                            seedSetVisited.add(website);
-                            System.out.println(seedSetVisited.size());
-                        }
-                        synchronized (seedSet) {
-                            seedSet.remove(website);
-                        }
 
+                        }
                     }
-                }
-            }
-                catch(FileNotFoundException e){
-                //e.printStackTrace();
-                System.out.println("File is not found");
+                } catch (FileNotFoundException e) {
+                    //e.printStackTrace();
+                    System.out.println("File is not found");
                     System.out.println(Thread.currentThread().getName());
-            } catch(IOException e){
-                //e.printStackTrace();
-                System.out.println("Invalid");
-                System.out.println(Thread.currentThread().getName());
-            }
-        catch(IllegalArgumentException | URISyntaxException x)
-            {
-                //x.printStackTrace();
-                System.out.println("Inavalid URL syntax");
-                System.out.println(Thread.currentThread().getName());
+                } catch (IOException e) {
+                    //e.printStackTrace();
+                    System.out.println("Invalid");
+                    System.out.println(Thread.currentThread().getName());
+                } catch (IllegalArgumentException | URISyntaxException x) {
+                    //x.printStackTrace();
+                    System.out.println("Inavalid URL syntax");
+                    System.out.println(Thread.currentThread().getName());
+                }
             }
         }
     }
