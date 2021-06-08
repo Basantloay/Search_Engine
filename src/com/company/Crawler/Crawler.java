@@ -143,7 +143,6 @@ public class Crawler implements Runnable{
 
         Integer i = 0;
         boolean f;
-        synchronized(seedSetVisited) {
 
             while (!seedSet.isEmpty() && seedSetVisited.size() <= max) {
                 try {
@@ -226,7 +225,7 @@ public class Crawler implements Runnable{
                     System.out.println(Thread.currentThread().getName());
                 }
             }
-        }
+    
     }
 
 
