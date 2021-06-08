@@ -1,5 +1,5 @@
 package com.company.Crawler;
-
+import com.company.Indexer.index;
 import com.company.Indexer.Website;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
@@ -26,23 +26,24 @@ public class Crawler implements Runnable{
     private static int max = 5000;
     public static int crawlerNumber = 5;
     private Queue<String> seedSetVisited;
-    private Vector<Integer> removedItems;
+    //private Vector<Integer> removedItems;
     private Queue<String> seedSet;
     private int ID;
     AtomicInteger crawlerCount = new AtomicInteger();
     private Date time;
     //Map<String, Vector<String>>
     Vector<String> disallowed;
-
+    Vector<String> compactDescription;
     Database database;
 
-    public Crawler(int id, Queue<String> seedSet, LinkedList<String> seedSetVisited, Vector<String> disallowed, Database database) {
+    public Crawler(int id, Queue<String> seedSet, LinkedList<String> seedSetVisited, Vector<String> disallowed, Database database,Vector<String> compactDescription) {
         this.ID = id;
         this.seedSet = seedSet;
         this.seedSetVisited = seedSetVisited;
         this.disallowed = disallowed;
         this.database=database;
         this.time=new Date();
+        this.compactDescription=compactDescription;
 
     }
 
@@ -121,10 +122,15 @@ public class Crawler implements Runnable{
             File file = new File(args);
             Scanner scannedFile = new Scanner(file);
             if ((Thread.currentThread().getName()) == "1") {
+
+                    database.getSeedSet(seedSet);
+                    database.getDisallowed(disallowed);
+                    database.getVisitedSeedSet(seedSetVisited);
+                    database.getDescription(compactDescription);
                 while (scannedFile.hasNextLine()) {
                     String URL = scannedFile.nextLine();
-                    synchronized (seedSet) {
-                        if (!seedSet.contains(URL))
+
+                        if (!seedSet.contains(URL) && !seedSetVisited.contains(URL))
                         {
                             DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                             LocalDateTime time2 = LocalDateTime.now();
@@ -132,25 +138,28 @@ public class Crawler implements Runnable{
                             seedSet.add(URL);
                         }
                         j++;
-                    }
+
                 }
+                scannedFile.close();
                 synchronized (flag) {
                     flag = false;
                 }
+
             } else
                 while (flag) {
-                    //System.out.println(Thread.currentThread().getName());
+                    System.out.println(Thread.currentThread().getName());
                     }
-            scannedFile.close();
+
 
         }catch(FileNotFoundException e){
             System.out.println("Error in file");
         }
         Integer i = 0;
         HttpURLConnection con;
-        while (!seedSet.isEmpty() && crawlerCount.intValue() <= max) {
+        while (!seedSet.isEmpty() && crawlerCount.intValue() <= max && seedSetVisited.size()<=max) {
             try {
-
+                //System.out.println(seedSet.size());
+               System.out.println(seedSetVisited.size());
                 System.out.println(Thread.currentThread().getName());
                 String website = "";
                 synchronized (seedSet) {
@@ -168,53 +177,64 @@ public class Crawler implements Runnable{
 
                 if (website != null && website.length() != 0) {
 
-                            robots(website, i);
-                            Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
-                            String str2=doc.toString();
-                            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-                            LocalDateTime time = LocalDateTime.now();
-                            database.Update(website,str2,dtf.format(time));
-                            crawlerCount.incrementAndGet();
-                            Elements links = doc.select("a[href]");
+                    robots(website, i);
+                    Document doc = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
 
-                            i++;
-                            boolean flag1, flag2;
-                            for (Element link : links) {
-                                String str = link.attr("abs:href");
-                                synchronized (seedSetVisited) {
-                                    flag1 = seedSetVisited.contains(str);
-                                }
-                                synchronized (seedSet) {
-                                    flag2 = seedSet.contains(str);
-                                }
-                                int iter = 0;
-                                boolean flag3 = false;
-                                synchronized (disallowed) {
-                                    while (iter < disallowed.size()) {
-                                        if (Pattern.matches(disallowed.get(iter), str)) {
-                                            flag3 = true;
-                                            break;
-                                        }
-                                        iter++;
-                                    }
-                                }
-                                if (!flag1 && !flag2 && !flag3) {
-                                    synchronized (seedSet) {
-                                        seedSet.add(str);
-                                        DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-                                        LocalDateTime time2 = LocalDateTime.now();
-                                        database.AddHyberlinks(str,dtf2.format(time2));
-                                    }
-                                }
-                            }
+                    if (!compactDescription.contains(website)) {
+                        String str2 = doc.toString();
+                        String s=str2.substring(0,str2.length()%100);
+
+                        compactDescription.add(s);
+                        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                        LocalDateTime time = LocalDateTime.now();
+                        database.Update(website, str2, dtf.format(time), s);
+                        crawlerCount.incrementAndGet();
+                        Elements links = doc.select("a[href]");
+                        i++;
+                        boolean flag1, flag2;
+                        for (Element link : links) {
+                            String str = link.attr("abs:href");
                             synchronized (seedSetVisited) {
-                                seedSetVisited.add(website);
+                                flag1 = seedSetVisited.contains(str);
                             }
                             synchronized (seedSet) {
-                                seedSet.remove(website);
+                                flag2 = seedSet.contains(str);
                             }
-
+                            int iter = 0;
+                            boolean flag3 = false;
+                            synchronized (disallowed) {
+                                while (iter < disallowed.size()) {
+                                    if (Pattern.matches(disallowed.get(iter), str)) {
+                                        flag3 = true;
+                                        break;
+                                    }
+                                    iter++;
+                                }
+                            }
+                            boolean flag4;
+                                /*synchronized(compactDescription)
+                                {
+                                    Document doc1 = Jsoup.connect(website).userAgent("Mozilla/5.0 (Windows NT 6.0) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2").followRedirects(true).method(Connection.Method.GET).timeout(1200000).ignoreHttpErrors(true).get();
+                                    flag4=compactDescription.contains(doc.title()+doc.head().toString()+doc.body().toString());
+                                }*/
+                            if (!flag1 && !flag2 && !flag3) {
+                                synchronized (seedSet) {
+                                    seedSet.add(str);
+                                    DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                                    LocalDateTime time2 = LocalDateTime.now();
+                                    database.AddHyberlinks(str, dtf2.format(time2));
+                                }
+                            }
                         }
+                        synchronized (seedSetVisited) {
+                            seedSetVisited.add(website);
+                        }
+                        synchronized (seedSet) {
+                            seedSet.remove(website);
+                        }
+
+                    }
+                }
             }
                 catch(FileNotFoundException e){
                 //e.printStackTrace();

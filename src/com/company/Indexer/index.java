@@ -200,14 +200,12 @@ public class index implements Runnable {
             this.db.AddIndexed(entry.getValue(), dtf2.format(time2));
         }
     }
-    void HTML_Parts_Init(List<String> HTML , Website web) throws IOException
+    public void HTML_Parts_Init(List<String> HTML , Website web) throws IOException
     {
         org.jsoup.nodes.Document ParsedHTML = null;
-        try {
-            ParsedHTML = Jsoup.connect(String.valueOf(web.getUrl())).get();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+            ParsedHTML = Jsoup.parse(web.getHtml());//Jsoup.connect(String.valueOf(web.getUrl())).get();
+
         HTML.add(new String(String.valueOf(web.getUrl())));
         HTML.add(new String(ParsedHTML.title()));
 

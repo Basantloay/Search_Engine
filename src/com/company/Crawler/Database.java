@@ -52,6 +52,7 @@ public class Database {
         websites.createIndex("rank");
         //websites.createIndex("hyberlinks");
         websites.createIndex("HTMLDocuments");
+        websites.createIndex("Description");
         websites.createIndex("Time");
         websites.createIndex("Title");
         websites.createIndex("Headers");
@@ -144,11 +145,11 @@ public class Database {
         }
     }
 
-    public void Update(String str,String document, String time)
+    public void Update(String str,String document, String time,String str2)
     {
         DBObject SearchQ = new BasicDBObject("URL", str);
         DBObject ObjectQ = new BasicDBObject("crawled", 1)
-                .append("Time",time).append("HTMLDocuments",document);
+                .append("Time",time).append("HTMLDocuments",document).append("Description",str2);
         DBObject UpdateQ = new BasicDBObject("$set",ObjectQ);
         if(websites.find(SearchQ).count() != 0)
             websites.update(SearchQ, UpdateQ);
@@ -175,6 +176,44 @@ public class Database {
             Website w = new Website(URL, i);
             w.setHtml((String)doc.get("HTMLDocuments"));
             Visited.add(w);
+        }
+    }
+    public void getSeedSet(Queue<String> seed) throws MalformedURLException, FileNotFoundException {
+        DBCursor cur =  websites.find(new BasicDBObject("crawled", 0).append("indexed",0));
+        int size = cur.size();
+        for(int i = 0 ;i< size;i++) {
+            DBObject doc = cur.next();
+            String URL = (String) doc.get("URL");
+            seed.add(URL);
+        }
+    }
+
+    public void getVisitedSeedSet(Queue<String> seed) throws MalformedURLException, FileNotFoundException {
+        DBCursor cur =  websites.find(new BasicDBObject("crawled", 1).append("indexed",0));
+        int size = cur.size();
+        for(int i = 0 ;i< size;i++) {
+            DBObject doc = cur.next();
+            String URL = (String) doc.get("URL");
+            seed.add(URL);
+        }
+    }
+    public void getDisallowed(Vector<String> seed) throws MalformedURLException, FileNotFoundException {
+        DBCursor cur =  disallowedWebsite.find(new BasicDBObject("crawled", 1).append("indexed",0));
+        int size = cur.size();
+        for(int i = 0 ;i< size;i++) {
+            DBObject doc = cur.next();
+            String URL = (String) doc.get("URL");
+            seed.add(URL);
+        }
+    }
+
+    public void getDescription(Vector<String> seed) throws MalformedURLException, FileNotFoundException {
+        DBCursor cur =  websites.find(new BasicDBObject("crawled", 1).append("indexed",0));
+        int size = cur.size();
+        for(int i = 0 ;i< size;i++) {
+            DBObject doc = cur.next();
+            String URL = (String) doc.get("Description");
+            seed.add(URL);
         }
     }
     public boolean SearchQuery(String str,List<String> URLList) {
